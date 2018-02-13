@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+       #map {
+        height: 100%;
+        width: 100%;
+        position:absolute;
+       }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="apiCall.js" charset="UTF-8"></script>
+    <script>
+    
+    	//funcion para crear el mapa
+    	function initMap() {
+    		var uluru = {lat: 21.921384, lng: -102.317756};
+	        var map = new google.maps.Map(document.getElementById('map'), {
+	          center: uluru,
+	          zoom: 13
+	        });
+	        var infoWindow = new google.maps.InfoWindow({map: map});
+
+
+	        //Centrar en la posicion Actual
+	        if (navigator.geolocation) {
+	          navigator.geolocation.getCurrentPosition(function(position) {
+	            var pos = {
+	              lat: position.coords.latitude,
+	              lng: position.coords.longitude
+	            };
+
+	            infoWindow.setPosition(pos);
+	            infoWindow.setContent('Posicion Actual.');
+	            map.setCenter(pos);
+	          }, function() {
+	            handleLocationError(true, infoWindow, map.getCenter());
+	          });
+	          //Poner todos los marcadores
+
+	          apiUrl("https://unionmx.com.mx/api/Reclutamiento/Coordenadas");
+
+	          $.ajax({
+		        type: 'GET',
+		        success: function (result) {
+		            alert("Poner las cordenadas");
+		            console.log(result);
+		            result["_Coordenadas"].forEach(function(element) { 
+					    marker = new google.maps.Marker({position: new google.maps.LatLng(element["_Latitude"], element["_Longitude"]),
+				        map: map}); 
+					});
+		        },
+		        error: function (result) {
+		        	//Si se usa en chrome se usa esta extencion extra https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi/related?hl=en-US
+		            alert("Error: Fallo al recuperar los json");
+		            console.log(result);
+		        }
+		    });
+	        } else {
+	          handleLocationError(false, infoWindow, map.getCenter());
+	        }
+
+      }
+      //Mandar errores por si llega a fallar
+      function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: El servicio de geolocalizacion fallo.' :
+                              'Error: Tu navegador no soporta la geolocalizacion.');
+      }
+      
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=	AIzaSyAuTas7naI-4Ch2ZTqgXusvJKNWtk1aJdY&callback=initMap">
+    </script>
+  </body>
+</html>
